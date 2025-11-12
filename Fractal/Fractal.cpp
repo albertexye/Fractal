@@ -71,12 +71,15 @@ static void newton(
         sycl::accessor out(buf_out, h, sycl::write_only);
         h.parallel_for(num_items, [=](auto i) {
             const complex x = vec[i];
-            const double da = std::abs(x - a);
-            const double db = std::abs(x - b);
-            const double dc = std::abs(x - c);
+            const complex da = x - a;
+            const complex db = x - b;
+            const complex dc = x - c;
+            const double da_hyp = da.real() * da.real() + da.imag() * da.imag();
+            const double db_hyp = db.real() * db.real() + db.imag() * db.imag();
+            const double dc_hyp = dc.real() * dc.real() + dc.imag() * dc.imag();
             const size_t index = (i[0] * w + i[1]) * 4;
-            if (da <= db && da <= dc) out[index] = FILL_INTENSITY;
-            else if (db <= da && db <= dc) out[index + 1] = FILL_INTENSITY;
+            if (da_hyp <= db_hyp && da_hyp <= dc_hyp) out[index] = FILL_INTENSITY;
+            else if (db_hyp <= da_hyp && db_hyp <= dc_hyp) out[index + 1] = FILL_INTENSITY;
             else out[index + 2] = FILL_INTENSITY;
             });
         });
